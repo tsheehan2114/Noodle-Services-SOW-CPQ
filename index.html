@@ -23374,7 +23374,7 @@ const SKUS=[
 
 // ─── state ────────────────────────────────────────────────────────────────────
 const S={};
-SKUS.forEach((s,i)=>{S[i]={sku:s,on:false,tier:s.tiers[0]||'',cust:'',seats:s.crmSeats||null};});
+SKUS.forEach((s,i)=>{S[i]={sku:s,on:false,tier:s.tiers[0]||'',cust:'',seats:s.crmSeats||null,yearPrices:{}};});
 
 // ─── Cadence constants - must be declared before any function that uses them ──
 const CADENCE_DEFAULTS = {
@@ -23438,15 +23438,16 @@ function buildTree(){
         const hasTiers=s.tiers.filter(t=>t).length>1;
         const r=document.createElement('div');r.className='sku-row';
         const opts=s.tiers.filter(t=>t).map(t=>`<option value="${t.replace(/"/g,'&quot;')}">${t}</option>`).join('');
-        r.innerHTML=`<label class="sku-chk"><input type="checkbox" id="cb_${i}" onchange="tog(${i},this.checked)">
-          <div class="sku-info"><div class="sku-nm">${s.name}</div>
-          <div class="sku-meta"><span class="sku-cd">${s.code}</span><span class="badge ${s.type==='Annual'?'ba':'bo'}">${s.type}</span></div></div></label>
-          <div class="cfg" id="cfg_${i}">
-            ${hasTiers?`<div class="cr"><span class="clbl">Price tier</span><select id="tier_${i}" onchange="upd(${i})">${opts}</select></div>`:`<div class="cr"><span class="clbl">Price</span><span style="font-size:12px;color:var(--ink2)">${s.tiers[0]||'Custom'}</span></div>`}
-            <div class="cdiv"></div>
-            <div class="cust-hd">&#9998; Override price</div>
-            <div class="cr"><input type="text" id="cst_${i}" placeholder="e.g. $45,000 or Variable to target" oninput="upd(${i})"></div>
-          </div>`;
+        r.innerHTML='<label class="sku-chk"><input type="checkbox" id="cb_'+i+'" onchange="tog('+i+',this.checked)">'
+          +'<div class="sku-info"><div class="sku-nm">'+s.name+'</div>'
+          +'<div class="sku-meta"><span class="sku-cd">'+s.code+'</span><span class="badge '+(s.type==='Annual'?'ba':'bo')+'">'+s.type+'</span></div></div></label>'
+          +'<div class="cfg" id="cfg_'+i+'">'
+          +(hasTiers?'<div class="cr"><span class="clbl">Price tier</span><select id="tier_'+i+'" onchange="upd('+i+')">'+opts+'</select></div>':'<div class="cr"><span class="clbl">Price</span><span style="font-size:12px;color:var(--ink2)">'+(s.tiers[0]||'Custom')+'</span></div>')
+          +'<div class="cdiv"></div>'
+          +'<div class="cust-hd">&#9998; Override price</div>'
+          +'<div class="cr"><input type="text" id="cst_'+i+'" placeholder="e.g. $45,000 or Variable to target" oninput="upd('+i+')"></div>'
+          +(s.type==='Annual'?'<div id="yprice_'+i+'"></div>':'')
+          +'</div>';
         // CRM seats spinner
         if(s.crmSeats!==undefined){
           const seatsRow=document.createElement('div');
@@ -23628,20 +23629,40 @@ function syncMediaFee(changedIdx){
   if(String(changedIdx) !== String(mediaIdx) && String(changedIdx) !== String(mediaPctIdx)) return;
   if(!S[mediaPctIdx].on) return;
 
-  var rawMedia = (S[mediaIdx].cust && S[mediaIdx].cust.trim()) ? S[mediaIdx].cust.trim() : S[mediaIdx].tier;
-  var mediaVal = parseMediaAmount(rawMedia);
-  if(mediaVal === null) return;
-
   var pctTier = S[mediaPctIdx].tier || '10% of Media Campaign';
   var pctMatch = pctTier.match(/([0-9.]+)[ ]*%/);
   if(!pctMatch) return;
   var pct = parseFloat(pctMatch[1]) / 100;
 
-  var fee = Math.round(mediaVal * pct);
-  var feeStr = '$' + fee.toLocaleString();
-  S[mediaPctIdx].cust = feeStr;
-  var custEl = document.getElementById('cst_' + mediaPctIdx);
-  if(custEl){ custEl.value = feeStr; custEl.style.background = 'var(--teal-lt)'; }
+  // ── Base cust field ──────────────────────────────────────────────────────
+  var rawMedia = (S[mediaIdx].cust && S[mediaIdx].cust.trim()) ? S[mediaIdx].cust.trim() : S[mediaIdx].tier;
+  var mediaVal = parseMediaAmount(rawMedia);
+  if(mediaVal !== null){
+    var fee = Math.round(mediaVal * pct);
+    var feeStr = '$' + fee.toLocaleString();
+    S[mediaPctIdx].cust = feeStr;
+    var custEl = document.getElementById('cst_' + mediaPctIdx);
+    if(custEl){ custEl.value = feeStr; custEl.style.background = 'var(--teal-lt)'; }
+  }
+
+  // ── Per-year fields ──────────────────────────────────────────────────────
+  var ty = parseInt(document.getElementById('ty').value) || 1;
+  if(ty > 1){
+    if(!S[mediaPctIdx].yearPrices) S[mediaPctIdx].yearPrices = {};
+    for(var y = 1; y <= ty; y++){
+      var rawYearMedia = (S[mediaIdx].yearPrices && S[mediaIdx].yearPrices[y] && S[mediaIdx].yearPrices[y].trim())
+        ? S[mediaIdx].yearPrices[y].trim()
+        : rawMedia; // fall back to base if no year-specific amount
+      var yearMediaVal = parseMediaAmount(rawYearMedia);
+      if(yearMediaVal !== null){
+        var yearFee = Math.round(yearMediaVal * pct);
+        var yearFeeStr = '$' + yearFee.toLocaleString();
+        S[mediaPctIdx].yearPrices[y] = yearFeeStr;
+        var ypEl = document.getElementById('yp_' + mediaPctIdx + '_' + y);
+        if(ypEl){ ypEl.value = yearFeeStr; ypEl.style.background = 'var(--teal-lt)'; }
+      }
+    }
+  }
 }
 
 function updCount(){
@@ -23657,7 +23678,7 @@ function cleanPrice(raw,type){
   return cleaned+' ('+label+')';
 }
 
-function getPrice(i){
+function getPrice(i, year){
   const s=S[i];
   // CRM: total = $17,000 center + (seats * $6,000)
   if(s.sku.code==='TECH-ANN-ENG-CRM-CENT' && s.seats!==null && !s.cust){
@@ -23665,8 +23686,61 @@ function getPrice(i){
     const total=17000+(seats*6000);
     return '$'+total.toLocaleString()+' (annual fee)';
   }
+  // Per-year price override (annual SKUs, multi-year contracts)
+  if(year && s.yearPrices && s.yearPrices[year] && s.yearPrices[year].trim()){
+    return cleanPrice(s.yearPrices[year].trim(), s.sku.type);
+  }
   const raw=(s.cust&&s.cust.trim())?s.cust.trim():s.tier||s.sku.tiers[0]||'Custom pricing';
   return cleanPrice(raw,s.sku.type);
+}
+
+function updYearPrice(i,y,val){
+  if(!S[i].yearPrices) S[i].yearPrices={};
+  S[i].yearPrices[y]=val;
+  syncMediaFee(i);
+  rp();
+}
+
+function fmtYearPrice(i,y,input){
+  const raw=input.value.trim();
+  if(raw && !/^(variable|custom|open)/i.test(raw)){
+    const nums=raw.replace(/[^0-9.]/g,'');
+    if(nums){
+      const val=parseFloat(nums);
+      if(!isNaN(val)){
+        const formatted='$'+Math.round(val).toLocaleString();
+        input.value=formatted;
+        if(!S[i].yearPrices) S[i].yearPrices={};
+        S[i].yearPrices[y]=formatted;
+        syncMediaFee(i);
+        rp();
+      }
+    }
+  }
+}
+
+function updateYearPriceInputs(){
+  const ty=parseInt(document.getElementById('ty').value)||1;
+  SKUS.forEach(function(s,i){
+    if(s.type!=='Annual') return;
+    const el=document.getElementById('yprice_'+i);
+    if(!el) return;
+    if(ty<=1){ el.innerHTML=''; el.removeAttribute('data-ty'); return; }
+    // Skip full rebuild if already built for this ty — preserves focus
+    if(parseInt(el.getAttribute('data-ty'))===ty) return;
+    el.setAttribute('data-ty', ty);
+    let html='<div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)">'
+      +'<div class="cust-hd" style="margin-bottom:6px">&#128197; Per-year pricing</div>';
+    for(let y=1;y<=ty;y++){
+      const val=(S[i].yearPrices&&S[i].yearPrices[y])||'';
+      html+='<div class="cr" style="margin-bottom:4px"><span class="clbl">Year '+y+'</span>'
+        +'<input type="text" id="yp_'+i+'_'+y+'" value="'+val.replace(/"/g,'&quot;')+'" '
+        +'placeholder="e.g. $100,000" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--ink1);width:140px" '
+        +'oninput="updYearPrice('+i+','+y+',this.value)" onblur="fmtYearPrice('+i+','+y+',this)"></div>';
+    }
+    html+='</div>';
+    el.innerHTML=html;
+  });
 }
 
 function fmtD(ds){
@@ -23729,8 +23803,10 @@ function getSowData(){
       }
       // Annual fees: on every invoice, split evenly by cadence (with inflation applied)
       annual.forEach(function({i,sku}){
-        const rawPrice = getPrice(i);
-        const inflatedPrice = applyInflation(rawPrice, y);
+        const s=S[i];
+        const hasYearPrice=s.yearPrices&&s.yearPrices[y]&&s.yearPrices[y].trim();
+        const rawPrice = hasYearPrice ? cleanPrice(s.yearPrices[y].trim(),sku.type) : getPrice(i);
+        const inflatedPrice = hasYearPrice ? rawPrice : applyInflation(rawPrice, y);
         const splitAmt = splitPrice(inflatedPrice, cadenceN);
         rows.push({service:sku.name,code:sku.code,type:'annual',
                    amount:splitAmt,date:dateStr});
@@ -23757,6 +23833,7 @@ function getSowData(){
 
 // ─── preview ──────────────────────────────────────────────────────────────────
 function rp(){
+  updateYearPriceInputs();
   const d=getSowData();
   const sel=getSel();
   document.getElementById('msub').textContent=sel.length?`${sel.length} service${sel.length>1?'s':''}  ·  ${d.client}`:'Select services to begin';
@@ -23769,7 +23846,12 @@ function rp(){
   Object.entries(grps).forEach(([g,items])=>{
     svcsH+=`<div class="grp-title">${g}</div>`;
     items.forEach(({i,sku})=>{
-      const li=sku.scope.map(s=>`<li>${s}</li>`).join('');
+      const li=sku.scope.map(s=>{
+        if(/^partner'?s?\s*role/i.test(s.trim())){
+          return `<li style="list-style:none;margin-left:-16px;margin-top:10px;font-weight:700;color:var(--ink1)">${s}</li>`;
+        }
+        return `<li>${s}</li>`;
+      }).join('');
       svcsH+=`<table class="st"><tr><td colspan="2" class="th">Service/Deliverable: ${sku.name}</td></tr>
         <tr><td class="lbl">Overview</td><td>${sku.overview}</td></tr>
         <tr><td class="lbl">Scope</td><td><ul>${li}</ul></td></tr>
@@ -23812,8 +23894,8 @@ function rp(){
     const totalStr=yearTotal>0?('$'+Math.round(yearTotal).toLocaleString()+(hasVar?' + variable':'')):(hasVar?'Variable':'-');
     const firstDate=yg.firstDate||'[Invoice Date]';
     const cadN=yg.cadenceN||1;
-    const cadLabel=cadN===1?'1 invoice':cadN===12?'monthly':cadN+'× per year';
-    br+=`<tr style="${shade}"><td style="text-align:center;font-weight:600">Year ${yg.year}</td><td style="text-align:center;font-weight:600">${totalStr}</td><td style="text-align:center">${firstDate}<br><span style="font-size:10px;color:var(--ink3)">${cadLabel}</span></td></tr>`;
+    const datesList=yg.invoices.map(function(inv){ return inv.date; }).join('<br>');
+    br+=`<tr style="${shade}"><td style="text-align:center;font-weight:600">Year ${yg.year}</td><td style="text-align:center;font-weight:600">${totalStr}</td><td style="text-align:center;line-height:1.7">${datesList}</td></tr>`;
   });
 
   document.getElementById('pv').innerHTML=`<div class="doc">
@@ -23960,7 +24042,7 @@ function updatePartnerSections(d){
   }
 }
 
-buildTree();updateCadenceFields();rp();
+buildTree();updateCadenceFields();updateYearPriceInputs();rp();
 
 function setS(state, msg){
   var el = document.getElementById('stxt');
@@ -24143,7 +24225,14 @@ function buildDocx(SOW, onDone){
     ch.push(new Paragraph({spacing:{before:240,after:80},children:[T(grpName,{bold:true,size:22,color:TEAL})]}));
     svcs.forEach(function(svc){
       var displayPrice=cleanPrice(svc.price,svc.type);
-      var scopeContent=svc.scope.map(bullet);
+      var scopeContent=[];
+      svc.scope.forEach(function(item){
+        if(/^partner'?s?\s*role/i.test(item.trim())){
+          scopeContent.push(new Paragraph({spacing:{before:200,after:60},children:[T(item,{bold:true,size:18})]}));
+        } else {
+          scopeContent.push(bullet(item));
+        }
+      });
 
       // Media Credits special rendering
       if(svc.code==='LD-LCH-MECRED'){
@@ -24154,8 +24243,7 @@ function buildDocx(SOW, onDone){
         new TableRow({children:[tealCellLeft('Service/Deliverable: '+svc.name,2,9360)]}),
         new TableRow({children:[lblCell('Overview of Service'),contentCell([P(T(svc.overview,{size:18}),{after:0})])]}),
         new TableRow({children:[lblCell('Scope of Services'),contentCell(scopeContent)]}),
-        new TableRow({children:[lblCell('Price'),contentCell([P(T(displayPrice,{bold:true,size:18}),{after:0})])]}),
-        new TableRow({children:[lblCell('Frequency'),contentCell([P(T(svc.frequency||'',{size:18}),{after:0})])]})
+        new TableRow({children:[lblCell('Price'),contentCell([P(T(displayPrice,{bold:true,size:18}),{after:0})])]})
       ]}));
       ch.push(P(T(''),{after:120}));
     });
@@ -24179,20 +24267,18 @@ function buildDocx(SOW, onDone){
   ];
   SOW.billingSchedule.forEach(function(yg,idx){
     var shade=idx%2===1?GRAY:null;
-    var invDate=yg.firstDate||'[Invoice Date]';
     var cadN=yg.cadenceN||1;
-    var cadLabel=cadN===1?'1 invoice/year':cadN===12?'monthly':cadN+'x per year';
     var yearTotal=calcYearTotal(dedupRows(yg.rows));
+    var dateParagraphs=yg.invoices.map(function(inv,invIdx){
+      return new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:invIdx<yg.invoices.length-1?20:0},children:[T(inv.date,{size:18})]});
+    });
     summaryRows.push(new TableRow({children:[
       new TableCell({width:{size:2340,type:WidthType.DXA},borders:ab(),shading:shade?{fill:shade,type:ShadingType.CLEAR}:undefined,margins:cm,
         children:[new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[T('Year '+String(yg.year),{bold:true,size:18})]})]}),
       new TableCell({width:{size:4680,type:WidthType.DXA},borders:ab(),shading:shade?{fill:shade,type:ShadingType.CLEAR}:undefined,margins:cm,
         children:[new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[T(yearTotal,{bold:true,size:18})]})]}),
       new TableCell({width:{size:2340,type:WidthType.DXA},borders:ab(),shading:shade?{fill:shade,type:ShadingType.CLEAR}:undefined,margins:cm,
-        children:[
-          new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:20},children:[T(invDate,{size:18})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[T(cadLabel,{size:14,italic:true,color:'888888'})]})
-        ]})
+        children:dateParagraphs})
     ]}));
   });
   ch.push(new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[2340,4680,2340],rows:summaryRows}));
