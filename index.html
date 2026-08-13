@@ -24010,23 +24010,6 @@ function updatePartnerSections(d){
   var client     = d.client  || '[Client Name]';
   var clientNick = d.clientNick || '';
 
-  // sub(): if a nickname is set, replace University/Client/Partner/Institution
-  // (and possessives) with the nickname. Case-aware — only replaces capitalised forms.
-  function sub(text){
-    if(!clientNick || !text) return text;
-    var nick     = clientNick;
-    var nickPoss = nick + (nick.slice(-1).toLowerCase()==='s' ? "'" : "'s");
-    return text
-      .replace(/\bUniversity's\b/g,  nickPoss)
-      .replace(/\bPartner's\b/g,     nickPoss)
-      .replace(/\bClient's\b/g,      nickPoss)
-      .replace(/\bInstitution's\b/g, nickPoss)
-      .replace(/\bUniversity\b/g,    nick)
-      .replace(/\bPartner\b/g,       nick)
-      .replace(/\bClient\b/g,        nick)
-      .replace(/\bInstitution\b/g,   nick);
-  }
-
   var ptEl = document.getElementById('prevPayTermsPara');
   if(ptEl){
     if(isExisting){
@@ -24132,6 +24115,22 @@ function buildDocx(SOW, onDone){
   var PageNumber     = _d.PageNumber;
 
   var TEAL='1A6F8A', WHITE='FFFFFF', GRAY='F5F5F5', BORDER='CCCCCC', INK2='444444';
+
+  var clientNick = SOW.clientNick || '';
+  function sub(text){
+    if(!clientNick || !text) return text;
+    var nick     = clientNick;
+    var nickPoss = nick + (nick.slice(-1).toLowerCase()==='s' ? "'" : "'s");
+    return text
+      .replace(/\bUniversity's\b/g,  nickPoss)
+      .replace(/\bPartner's\b/g,     nickPoss)
+      .replace(/\bClient's\b/g,      nickPoss)
+      .replace(/\bInstitution's\b/g, nickPoss)
+      .replace(/\bUniversity\b/g,    nick)
+      .replace(/\bPartner\b/g,       nick)
+      .replace(/\bClient\b/g,        nick)
+      .replace(/\bInstitution\b/g,   nick);
+  }
 
   function b(c){ return {style:BorderStyle.SINGLE,size:1,color:c||BORDER}; }
   function ab(c){ var x=b(c); return {top:x,bottom:x,left:x,right:x}; }
