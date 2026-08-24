@@ -24277,7 +24277,7 @@ function buildDocx(SOW, onDone){
   } else {
     ch.push(P([T('Payment Terms are outlined in the General Terms of Business, located at ',{size:20}),T('https://about.noodle.com/general-terms-of-business/version_2-1/',{size:20,color:TEAL}),T(' (the "GTB"). Invoices will be sent by Noodle to '+(SOW.clientNick||SOW.client)+'. All payments are due Net 30 from the date Noodle sends the invoice.',{size:20})],{after:120}));
   }
-  ch.push(P([T('If this SOW is not signed by both Parties and invoice paid within 30 days following the start of the SOW Term, Noodle reserves the right, at its sole discretion, to suspend its provision of services. All sales under this SOW are final and not subject to reconciliation or refunds.',{size:20})],{after:160}));
+  ch.push(P([T('If this SOW is signed by both Parties and invoice is not paid within 30 days following the start of the SOW Term, Noodle reserves the right, at its sole discretion, to suspend its provision of services. All sales under this SOW are final and not subject to reconciliation or refunds.',{size:20})],{after:160}));
 
   // Summary billing table
   var summaryRows=[
