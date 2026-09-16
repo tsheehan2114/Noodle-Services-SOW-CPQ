@@ -23908,7 +23908,7 @@ function rp(){
       ${d.program?`<div class="doc-prog">${d.program}</div>`:'<div style="height:6px"></div>'}
       <div class="divd"></div>
       <div class="sec-h">Service Overview</div>
-      <div class="para">Noodle Partners, PBC ("Noodle") will provide ${d.client} ${d.clientNick ? '("'+ d.clientNick +'")' : '("Client")'} the following services pursuant to this Statement of Work (the "SOW"). Such services shall begin on ${d.startStr} (the "Services Date"), unless specified herein, be provided directly by Noodle, and constitute all services Noodle shall provide ${d.client} from the Services Date through the end of the SOW Term.</div>
+      <div class="para">Noodle Partners, PBC ("Noodle") will provide ${d.client} ${d.clientNick ? '("'+ d.clientNick +'")' : '("Client")'} the following services pursuant to this Statement of Work (the "SOW"). Such services shall commence on the SOW Effective Date, unless otherwise specified herein, and will be provided directly by Noodle during the SOW Term.</div>
       <div class="sec-h">Service Detail</div>
       ${svcsH}
       <div class="divd"></div>
@@ -23921,14 +23921,14 @@ function rp(){
       ${d.inflationPct>0?`<div style="font-size:11px;color:var(--ink3);margin-top:4px">&#8593; ${d.inflationPct}% annual inflation applied to annual fees from Year 2 onwards (simple, applied to Year 1 base).</div>`:''}
       <div class="divd"></div>
       <div class="sec-h">Term &amp; Termination</div>
-      <div class="para">The term of this SOW will begin on the Effective Date and continue through ${d.endStr} ("SOW Term"). This SOW shall renew automatically for an additional year unless either Party provides written termination notice no fewer than thirty (30) days prior to the end date.</div>
+      <div class="para">The term of this SOW will begin on the SOW Effective Date and continue through ${d.endStr} ("SOW Term"). This SOW shall renew automatically for an additional year unless either Party provides written termination notice no fewer than thirty (30) days prior to the end date.</div>
       <div class="sec-h">Statement of Work and General Terms of Business</div>
       <div class="para" id="prevGtbPara"></div>
       <div class="sec-h">Service Notes</div>
       <div class="para">Noodle may deliver or use an AI solution, or multiple AI solutions, drawing from one or more large language models ("LLMs") to facilitate Noodle's services under this SOW. ${d.clientNick||d.client} consents to the use of such LLMs for this purpose.</div>
       <div class="divd"></div>
       <div class="sec-h">Agreement Date</div>
-      <div class="para">Agreed to as of the date of the last signature below (the "Effective Date")</div>
+      <div class="para">Agreed to as of the date of the last signature below (the "SOW Effective Date")</div>
       <table class="sigtbl"><tr>
         <td><div class="sig-nm">${d.client}</div><div class="sig-ln"></div><div class="sig-f">Name:</div><div class="sig-f">Title:</div><div class="sig-f">Date:</div></td>
         <td><div class="sig-nm">Noodle Partners, PBC</div><div class="sig-ln"></div><div class="sig-f">Name: Keri Hoyt</div><div class="sig-f">Title: President &amp; Chief Operating Officer</div><div class="sig-f">Date:</div></td>
@@ -24235,7 +24235,7 @@ function buildDocx(SOW, onDone){
 
   // ── Service Overview ───────────────────────────────────────────────────────
   ch.push(secHead('Service Overview'));
-  ch.push(P([T('Noodle Partners, PBC ("Noodle") will provide '+SOW.client+(SOW.clientNick ? ' ("'+SOW.clientNick+'")' : ' ("Client")')+' the following services pursuant to this Statement of Work (the "SOW"). Such services shall begin on '+SOW.startStr+' (the "Services Date"), unless specified herein, be provided directly by Noodle, and constitute all services Noodle shall provide '+(SOW.clientNick||SOW.client)+' from the Services Date through the end of the SOW Term.',{size:20})],{after:200}));
+  ch.push(P([T('Noodle Partners, PBC ("Noodle") will provide '+SOW.client+(SOW.clientNick ? ' ("'+SOW.clientNick+'")' : ' ("Client")')+' the following services pursuant to this Statement of Work (the "SOW"). Such services shall commence on the SOW Effective Date, unless otherwise specified herein, and will be provided directly by Noodle during the SOW Term.',{size:20})],{after:200}));
 
   // ── Service Detail ─────────────────────────────────────────────────────────
   ch.push(secHead('Service Detail'));
@@ -24311,7 +24311,7 @@ function buildDocx(SOW, onDone){
 
   // ── Term & Termination ─────────────────────────────────────────────────────
   ch.push(secHead('Term & Termination'));
-  ch.push(P([T('The term of this SOW will begin on the Effective Date and continue through '+SOW.endStr+' ("SOW Term").',{size:20})],{after:120}));
+  ch.push(P([T('The term of this SOW will begin on the SOW Effective Date and continue through '+SOW.endStr+' ("SOW Term").',{size:20})],{after:120}));
   ch.push(P([T('Renewal. ',{size:20,bold:true,italic:true}),T('This SOW shall renew automatically for an additional year (a "Renewal Term") unless either Party provides a written termination notice to the other Party no fewer than thirty (30) days prior to the end date of a SOW Term or, in the case of a renewal, a Renewal Term.',{size:20})],{after:120}));
 
   // ── GTB ────────────────────────────────────────────────────────────────────
@@ -24355,7 +24355,7 @@ function buildDocx(SOW, onDone){
   ch.push(secHead('Next Steps'));
   ch.push(P([T('This SOW is valid for 45 days from when it was reviewed with you. To enter into this SOW please provide your signature below.',{size:20})],{after:200}));
   ch.push(secHead('Agreement Date'));
-  ch.push(P([T('Agreed to as of the date of the last signature below (the "Effective Date")',{size:20})],{after:360}));
+  ch.push(P([T('Agreed to as of the date of the last signature below (the "SOW Effective Date")',{size:20})],{after:360}));
   ch.push(new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[4680,4680],rows:[
     new TableRow({children:[
       new TableCell({width:{size:4680,type:WidthType.DXA},borders:anb(),margins:cm,children:[P(T(SOW.clientNick||SOW.client,{bold:true,size:20}),{after:0})]}),
@@ -24389,7 +24389,7 @@ function buildDocx(SOW, onDone){
     sections:[{
       properties:{page:{size:{width:12240,height:15840},margin:{top:1080,right:1080,bottom:1080,left:1080}}},
       headers:{default:new Header({children:[new Paragraph({spacing:{before:0,after:80},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:TEAL,space:1}},children:[T('NOODLE',{bold:true,size:22,color:TEAL}),T('\u2122  |  Statement of Work',{size:20,color:INK2})]})]})},
-      footers:{default:new Footer({children:[new Paragraph({spacing:{before:80,after:0},border:{top:{style:BorderStyle.SINGLE,size:4,color:TEAL,space:1}},tabStops:[{type:TabStopType.CENTER,position:4680},{type:TabStopType.RIGHT,position:TabStopPosition.MAX}],children:[T('highered.noodle.com',{size:16,color:TEAL}),new TextRun({text:'\t',font:'Inter',size:16}),new TextRun({children:[PageNumber.CURRENT],font:'Inter',size:16,color:INK2}),new TextRun({text:'\t',font:'Inter',size:16}),T('highered.noodle.com',{size:16,color:INK2})]})]})},
+      footers:{default:new Footer({children:[new Paragraph({spacing:{before:80,after:0},border:{top:{style:BorderStyle.SINGLE,size:4,color:TEAL,space:1}},tabStops:[{type:TabStopType.RIGHT,position:TabStopPosition.MAX}],children:[T('highered.noodle.com',{size:16,color:TEAL}),new TextRun({text:'\t',font:'Inter',size:16}),new TextRun({children:[PageNumber.CURRENT],font:'Inter',size:16,color:INK2})]})]})},
       children:ch
     }]
   });
@@ -24552,7 +24552,7 @@ function buildDPA(SOW, ch, T, P, Paragraph, bullet, TEAL, INK2){
   ch.push(dpaP('5.2. '+client+' shall promptly direct to Noodle all requests it may receive directly from Data Subjects in the exercise of their rights in relation to the Processing subject to this DPA.'));
   ch.push(dpaP('5.3. Noodle shall assist '+client+' by implementing appropriate technical and organizational measures, insofar as it is possible, for the fulfillment of '+client+'\'s obligations to inform data subjects about the details of processing and to respond to requests for access, rectification, erasure, and portability of personal data as provided for by applicable laws, such as the GDPR and CCPA, and their implementing rules and regulations, as well as for requests to object to processing of data.'));
   ch.push(dpaP('5.4. If a Data Subject brings a claim directly against Noodle for damages suffered in relation to '+client+'\'s breach of this DPA or applicable law, such as the GDPR or CCPA, and their applicable implementing rules and regulations, '+client+' will indemnify Noodle for any cost, charge, damages, expenses or loss arising from such a claim.'));
-  ch.push(new Paragraph({spacing:{before:240,after:0},children:[T('Agreed to as the Effective Date, above.',{size:20,italic:true})]}));
+  ch.push(new Paragraph({spacing:{before:240,after:0},children:[T('Agreed to as of the SOW Effective Date, above.',{size:20,italic:true})]}));
 }
 
 // ── Media Credits table (separated to avoid deep nesting) ──────────────────────
