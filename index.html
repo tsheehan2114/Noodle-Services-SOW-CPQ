@@ -23250,6 +23250,13 @@ html,body{height:100%;font-family:var(--font);background:var(--surf);color:var(-
             <option value="existing">Existing Partner</option>
           </select>
         </div>
+        <div class="f full" id="paStatusRow" style="display:none">
+          <label>Existing PA?</label>
+          <select id="existingPA" onchange="rp()">
+            <option value="no" selected>No Existing PA</option>
+            <option value="yes">Existing PA</option>
+          </select>
+        </div>
         <div class="f full" id="gtbDateRow" style="display:none">
           <label>GTB Signed Date</label>
           <input id="gtbDate" type="date" onchange="rp()" style="width:100%">
@@ -23822,12 +23829,14 @@ function getSowData(){
     billing.push({year:y, rows:allRows, invoices, firstDate, cadenceN});
   }
   const partnerType = document.getElementById('ptype').value;
+  const existingPA = partnerType === 'existing' && document.getElementById('existingPA').value === 'yes';
   const gtbDateRaw = document.getElementById('gtbDate').value;
   const gtbDateStr = gtbDateRaw ? new Date(gtbDateRaw+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : null;
 
   return{client,program,startStr,endStr,termYears:ty,
     clientNick,
     partnerType,   // 'new' or 'existing'
+    existingPA,    // true only when Existing Partner + Existing PA
     gtbDate:gtbDateStr, // only set when existing partner
     inflationPct,  // annual inflation rate %
     services:sel.map(({i,sku})=>({name:sku.name,code:sku.code,group:sku.group,type:sku.type,price:getPrice(i),overview:sku.overview,scope:sku.scope,frequency:sku.frequency})),
@@ -23908,7 +23917,7 @@ function rp(){
       ${d.program?`<div class="doc-prog">${d.program}</div>`:'<div style="height:6px"></div>'}
       <div class="divd"></div>
       <div class="sec-h">Service Overview</div>
-      <div class="para">Noodle Partners, PBC ("Noodle") will provide ${d.client} ${d.clientNick ? '("'+ d.clientNick +'")' : '("Client")'} the following services pursuant to this Statement of Work (the "SOW"). Such services shall commence on the SOW Effective Date, unless otherwise specified herein, and will be provided directly by Noodle during the SOW Term.</div>
+      <div class="para">Noodle Partners, PBC ("Noodle") will provide ${d.client} ${d.clientNick ? '("'+ d.clientNick +'")' : '("Client")'} the following services pursuant to this Statement of Work (the "SOW"). ${d.existingPA ? 'Such services shall commence on the SOW Effective Date, unless otherwise specified herein, be provided directly by Noodle, and constitute all services Noodle shall provide '+(d.clientNick||d.client)+' from the SOW Effective Date through the end of the SOW Term.' : 'Such services shall commence on the SOW Effective Date, unless otherwise specified herein, and will be provided directly by Noodle during the SOW Term.'}</div>
       <div class="sec-h">Service Detail</div>
       ${svcsH}
       <div class="divd"></div>
@@ -24000,7 +24009,11 @@ function fmtInvoiceDate(month, year){
 
 function togglePartnerType(){
   const isExisting = document.getElementById('ptype').value === 'existing';
+  document.getElementById('paStatusRow').style.display = isExisting ? 'block' : 'none';
   document.getElementById('gtbDateRow').style.display = isExisting ? 'block' : 'none';
+  if(!isExisting){
+    document.getElementById('existingPA').value = 'no';
+  }
   rp();
 }
 
@@ -24235,7 +24248,13 @@ function buildDocx(SOW, onDone){
 
   // ── Service Overview ───────────────────────────────────────────────────────
   ch.push(secHead('Service Overview'));
-  ch.push(P([T('Noodle Partners, PBC ("Noodle") will provide '+SOW.client+(SOW.clientNick ? ' ("'+SOW.clientNick+'")' : ' ("Client")')+' the following services pursuant to this Statement of Work (the "SOW"). Such services shall commence on the SOW Effective Date, unless otherwise specified herein, and will be provided directly by Noodle during the SOW Term.',{size:20})],{after:200}));
+  var serviceOverviewText = 'Noodle Partners, PBC ("Noodle") will provide '+SOW.client+(SOW.clientNick ? ' ("'+SOW.clientNick+'")' : ' ("Client")')+' the following services pursuant to this Statement of Work (the "SOW"). ';
+  if(SOW.existingPA){
+    serviceOverviewText += 'Such services shall commence on the SOW Effective Date, unless otherwise specified herein, be provided directly by Noodle, and constitute all services Noodle shall provide '+(SOW.clientNick||SOW.client)+' from the SOW Effective Date through the end of the SOW Term.';
+  } else {
+    serviceOverviewText += 'Such services shall commence on the SOW Effective Date, unless otherwise specified herein, and will be provided directly by Noodle during the SOW Term.';
+  }
+  ch.push(P([T(serviceOverviewText,{size:20})],{after:200}));
 
   // ── Service Detail ─────────────────────────────────────────────────────────
   ch.push(secHead('Service Detail'));
