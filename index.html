@@ -23081,7 +23081,7 @@ var __async = (__this, __arguments, generator) => {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Noodle CPQ Services</title>
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--teal:#1A6F8A;--teal-dk:#125068;--teal-lt:#E8F4F8;--teal-mid:#C8E4EE;--ink:#1C1C1C;--ink2:#444;--ink3:#888;--line:#E2E2E2;--surf:#F9F9F8;--wh:#fff;--green:#1A8A5A;--green-lt:#E8F5EF;--amber:#B86A00;--red:#C0392B;--red-lt:#FDECEA;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -23171,7 +23171,7 @@ html,body{height:100%;font-family:var(--font);background:var(--surf);color:var(-
 .doc-logo sup{font-size:9px;vertical-align:super}
 .doc-url{font-size:11px;color:rgba(255,255,255,.65)}
 .doc-bd{padding:30px}
-.doc-h1{font-size:26px;font-weight:300;color:var(--ink);margin-bottom:3px;line-height:1.2}
+.doc-h1{font-family:'Inter',sans-serif;font-size:26px;font-weight:900;color:var(--ink);margin-bottom:3px;line-height:1.2}
 .doc-prog{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:20px}
 .divd{height:1px;background:var(--line);margin:18px 0}
 .sec-h{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:7px;padding-bottom:5px;border-bottom:2px solid var(--teal);display:inline-block;text-transform:uppercase;letter-spacing:.04em}
@@ -23196,7 +23196,7 @@ html,body{height:100%;font-family:var(--font);background:var(--surf);color:var(-
 
 .sigtbl{width:100%;border-collapse:collapse;margin-top:14px}
 .sigtbl td{padding:6px 16px 6px 0;vertical-align:top;width:50%}
-.sig-nm{font-weight:700;font-size:13px;margin-bottom:10px}
+.sig-nm{font-family:'Inter',sans-serif;font-weight:900;font-size:13px;margin-bottom:10px}
 .sig-ln{border-bottom:1px solid var(--ink3);margin-bottom:7px;height:26px}
 .sig-f{font-size:12px;color:var(--ink2);margin-bottom:5px}
 
@@ -24153,7 +24153,7 @@ function buildDocx(SOW, onDone){
 
   function T(text,o){
     o=o||{};
-    return new TextRun({text:text,font:'Inter',size:o.size||20,bold:o.bold||false,color:o.color||'000000',italics:o.italic||false});
+    return new TextRun({text:text,font:o.black?'Inter Black':'DM Sans',size:o.size||20,bold:o.black?false:(o.bold||false),color:o.color||'000000',italics:o.italic||false});
   }
   function P(kids,o){
     o=o||{};
@@ -24173,18 +24173,18 @@ function buildDocx(SOW, onDone){
     while((m = pat.exec(text)) !== null){
       // Text before match
       if(m.index > last){
-        runs.push(new TextRun({text:text.slice(last,m.index),font:'Inter',size:size}));
+        runs.push(new TextRun({text:text.slice(last,m.index),font:'DM Sans',size:size}));
       }
       // The matched span — highlight in yellow
-      runs.push(new TextRun({text:m[0],font:'Inter',size:size,bold:true,
+      runs.push(new TextRun({text:m[0],font:'DM Sans',size:size,bold:true,
         highlight:'yellow'}));
       last = m.index + m[0].length;
     }
     // Remaining text
     if(last < text.length){
-      runs.push(new TextRun({text:text.slice(last),font:'Inter',size:size}));
+      runs.push(new TextRun({text:text.slice(last),font:'DM Sans',size:size}));
     }
-    return runs.length ? runs : [new TextRun({text:text,font:'Inter',size:size})];
+    return runs.length ? runs : [new TextRun({text:text,font:'DM Sans',size:size})];
   }
   function secHead(text){
     return new Paragraph({spacing:{before:240,after:120},border:{bottom:{style:BorderStyle.SINGLE,size:6,color:TEAL,space:1}},children:[T(text,{bold:true,size:22,color:TEAL})]});
@@ -24241,7 +24241,7 @@ function buildDocx(SOW, onDone){
   var ch=[];
 
   // ── Title ──────────────────────────────────────────────────────────────────
-  ch.push(new Paragraph({spacing:{before:0,after:120},children:[T('Statement of Work: '+SOW.client,{size:40})]}));
+  ch.push(new Paragraph({spacing:{before:0,after:120},children:[T('Statement of Work: '+SOW.client,{size:40,black:true})]}));
   if(SOW.program){
     ch.push(new Paragraph({spacing:{before:0,after:240},children:[T(SOW.program,{bold:true,size:22,color:INK2})]}));
   }
@@ -24377,8 +24377,8 @@ function buildDocx(SOW, onDone){
   ch.push(P([T('Agreed to as of the date of the last signature below (the "SOW Effective Date")',{size:20})],{after:360}));
   ch.push(new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[4680,4680],rows:[
     new TableRow({children:[
-      new TableCell({width:{size:4680,type:WidthType.DXA},borders:anb(),margins:cm,children:[P(T(SOW.clientNick||SOW.client,{bold:true,size:20}),{after:0})]}),
-      new TableCell({width:{size:4680,type:WidthType.DXA},borders:anb(),margins:cm,children:[P(T('Noodle Partners, PBC',{bold:true,size:20}),{after:0})]})
+      new TableCell({width:{size:4680,type:WidthType.DXA},borders:anb(),margins:cm,children:[P(T(SOW.clientNick||SOW.client,{size:20,black:true}),{after:0})]}),
+      new TableCell({width:{size:4680,type:WidthType.DXA},borders:anb(),margins:cm,children:[P(T('Noodle Partners, PBC',{size:20,black:true}),{after:0})]})
     ]}),
     new TableRow({children:[
       new TableCell({width:{size:4680,type:WidthType.DXA},borders:anb(),margins:{top:400,bottom:0,left:150,right:150},children:[P(T('By: ___________________________',{size:20}),{after:0})]}),
@@ -24391,8 +24391,8 @@ function buildDocx(SOW, onDone){
   ]}));
 
   // ── Appendix A: Detailed Invoice Schedule ─────────────────────────────────
-  ch.push(new Paragraph({pageBreakBefore:true,spacing:{before:0,after:80},children:[T('Appendix A',{size:36})]}));
-  ch.push(new Paragraph({spacing:{before:0,after:240},children:[T('Detailed Invoice Schedule',{bold:true,size:22,color:INK2})]}));
+  ch.push(new Paragraph({pageBreakBefore:true,spacing:{before:0,after:80},children:[T('Appendix A',{size:36,black:true})]}));
+  ch.push(new Paragraph({spacing:{before:0,after:240},children:[T('Detailed Invoice Schedule',{size:22,black:true,color:INK2})]}));
 
   buildAppendixA(SOW, ch, T, Table, TableRow, TableCell, Paragraph, AlignmentType, WidthType, BorderStyle, ShadingType, ab, cm, TEAL, WHITE, GRAY, tealCellCenter, centerCell);
 
@@ -24404,11 +24404,11 @@ function buildDocx(SOW, onDone){
   // ── Assemble ───────────────────────────────────────────────────────────────
   var doc=new Document({
     numbering:{config:[{reference:'bullets',levels:[{level:0,format:LevelFormat.BULLET,text:'\u2022',alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:360,hanging:280}}}}]}]},
-    styles:{default:{document:{run:{font:'Inter',size:20}}}},
+    styles:{default:{document:{run:{font:'DM Sans',size:20}}}},
     sections:[{
       properties:{page:{size:{width:12240,height:15840},margin:{top:1080,right:1080,bottom:1080,left:1080}}},
       headers:{default:new Header({children:[new Paragraph({spacing:{before:0,after:80},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:TEAL,space:1}},children:[T('NOODLE',{bold:true,size:22,color:TEAL}),T('\u2122  |  Statement of Work',{size:20,color:INK2})]})]})},
-      footers:{default:new Footer({children:[new Paragraph({spacing:{before:80,after:0},border:{top:{style:BorderStyle.SINGLE,size:4,color:TEAL,space:1}},tabStops:[{type:TabStopType.RIGHT,position:TabStopPosition.MAX}],children:[T('https://www.noodle.com/',{size:16,color:TEAL}),new TextRun({text:'\t',font:'Inter',size:16}),new TextRun({children:[PageNumber.CURRENT],font:'Inter',size:16,color:INK2})]})]})},
+      footers:{default:new Footer({children:[new Paragraph({spacing:{before:80,after:0},border:{top:{style:BorderStyle.SINGLE,size:4,color:TEAL,space:1}},tabStops:[{type:TabStopType.RIGHT,position:TabStopPosition.MAX}],children:[T('https://www.noodle.com/',{size:16,color:TEAL}),new TextRun({text:'\t',font:'DM Sans',size:16}),new TextRun({children:[PageNumber.CURRENT],font:'DM Sans',size:16,color:INK2})]})]})},
       children:ch
     }]
   });
@@ -24523,8 +24523,8 @@ function buildDPA(SOW, ch, T, P, Paragraph, bullet, TEAL, INK2){
   function dpaP(text){ return P([T(text,{size:18})],{after:100}); }
   function dpaH(text){ return new Paragraph({spacing:{before:160,after:60},children:[T(text,{bold:true,size:20})]}); }
 
-  ch.push(new Paragraph({pageBreakBefore:true,spacing:{before:0,after:80},children:[T('Appendix B',{size:36})]}));
-  ch.push(new Paragraph({spacing:{before:0,after:160},children:[T('Data Protection Agreement',{bold:true,size:22,color:INK2})]}));
+  ch.push(new Paragraph({pageBreakBefore:true,spacing:{before:0,after:80},children:[T('Appendix B',{size:36,black:true})]}));
+  ch.push(new Paragraph({spacing:{before:0,after:160},children:[T('Data Protection Agreement',{size:22,black:true,color:INK2})]}));
 
   ch.push(dpaP('This Data Protection Addendum ("DPA") is between Noodle Partners, PBC ("Noodle") and '+client+'. Noodle and '+client+' are referred to as a "Party" and collectively as "Parties."'));
   ch.push(dpaP('This DPA reflects the Parties\' agreement with respect to the Processing of Personal Data in connection with the General Terms of Business (the "GTB") and attached SOW (the SOW and GTB together the "Agreement") between the Parties.'));
